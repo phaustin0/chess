@@ -5,6 +5,8 @@ from pieces.pawn import *
 from pieces.bishop import *
 from pieces.knight import *
 from pieces.rook import *
+from pieces.queen import *
+from pieces.king import *
 
 start_white = [
     [black_rook, black_knight, black_bishop, black_queen, black_king, black_bishop, black_knight, black_rook],
@@ -58,6 +60,10 @@ class Game:
 		Knight(self, self._get_positions()[0][5], not self.is_white)
 		Rook(self, self._get_positions()[0][6], self.is_white)
 		Rook(self, self._get_positions()[0][7], not self.is_white)
+		Queen(self, self._get_positions()[1][2], self.is_white)
+		Queen(self, self._get_positions()[1][3], not self.is_white)
+		King(self, self._get_positions()[1][4], self.is_white)
+		King(self, self._get_positions()[1][5], not self.is_white)
 
 	def events(self):
 		for event in pygame.event.get():
