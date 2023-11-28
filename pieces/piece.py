@@ -16,8 +16,5 @@ class Piece(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = pos
 
-    def move(self):
-        pass
-
     def get_valid_moves(self):
         pass

@@ -58,6 +58,8 @@ class Game:
 
 		self.pieces = self._load_pieces_from_fen(self.start_fen)
 		self.moved_piece = None
+		self.original_piece_position = None
+		self.valid_moves = None
 
 	def events(self):
 		for event in pygame.event.get():
@@ -68,28 +70,40 @@ class Game:
 				if event.button != 1:
 					continue
 
-				x, y = self._get_board_position()
+				x, y = self.get_board_position()
 				if x < 0 or y < 0:
 					continue
 
-				piece = self.pieces[x][y]
+				piece = self.pieces[y][x]
 				if piece == "":
 					continue
 				self.moved_piece = piece
-				self.pieces[x][y] = ""
+				self.valid_moves = self.moved_piece.get_valid_moves()
+				self.original_piece_position = (x, y)
+				self.pieces[y][x] = ""
 
 			if event.type == pygame.MOUSEBUTTONUP:
 				if event.button != 1: continue
 				if self.moved_piece is None: continue
 
-				x, y = self._get_board_position()
-				if self.pieces[x][y] != "":
-					self.pieces[x][y].kill()
+				x, y = self.get_board_position()
 
-				self.pieces[x][y] = self.moved_piece
-				self.moved_piece.has_moved = True
-				self.moved_piece.rect.center = self.positions[x][y]
+				valid = (x,y) in self.valid_moves
+				og_x, og_y = self.original_piece_position
+				if not valid and self.moved_piece.is_white == self.is_white:
+					self.moved_piece.rect.center = self.positions[og_y][og_x]
+					self.pieces[og_y][og_x] = self.moved_piece
+				else:
+					if self.pieces[y][x] != "":
+						self.pieces[y][x].kill()
+
+					self.moved_piece.has_moved = True
+					self.moved_piece.rect.center = self.positions[y][x]
+					self.pieces[y][x] = self.moved_piece
+
 				self.moved_piece = None
+				self.valid_moves = None
+				self.original_piece_position = None
 
 	def update(self):
 		if self.moved_piece is not None:
@@ -103,9 +117,8 @@ class Game:
 		self.all_sprites.draw(self.screen)
 		pygame.display.update()
 
-	# private functions
-	def _get_board_position(self):
-		y, x = pygame.mouse.get_pos()
+	def get_board_position(self):
+		x, y = pygame.mouse.get_pos()
 		x = x - self.start_x
 		y = y - self.start_y
 
@@ -116,6 +129,7 @@ class Game:
 		y = ceil(y / 100) - 1
 		return (x, y)
 
+	# private functions
 	def _get_positions(self):
 		pos = []
 		for h in range(0, 8):
