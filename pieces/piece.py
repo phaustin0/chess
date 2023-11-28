@@ -9,7 +9,7 @@ class Piece(pygame.sprite.Sprite):
         self.groups = self.game.all_sprites, self.game.pieces_sprites
         pygame.sprite.Sprite.__init__(self, self.groups)
 
-        self.is_moved = False
+        self.has_moved = False
 
         path = os.path.join(os.getcwd(),f"pieces/img/{img_path}.png")
         self.image = pygame.image.load(path)

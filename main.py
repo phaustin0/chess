@@ -1,4 +1,5 @@
 import pygame
+from math import ceil
 from settings import *
 from board import *
 from pieces.pawn import *
@@ -56,13 +57,43 @@ class Game:
 		self.start_fen = start_white_fen if self.is_white else start_black_fen
 
 		self.pieces = self._load_pieces_from_fen(self.start_fen)
+		self.moved_piece = None
 
 	def events(self):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				self.running = False
 
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if event.button != 1:
+					continue
+
+				x, y = self._get_board_position()
+				if x < 0 or y < 0:
+					continue
+
+				piece = self.pieces[x][y]
+				if piece == "":
+					continue
+				self.moved_piece = piece
+				self.pieces[x][y] = ""
+
+			if event.type == pygame.MOUSEBUTTONUP:
+				if event.button != 1: continue
+				if self.moved_piece is None: continue
+
+				x, y = self._get_board_position()
+				if self.pieces[x][y] != "":
+					self.pieces[x][y].kill()
+
+				self.pieces[x][y] = self.moved_piece
+				self.moved_piece.has_moved = True
+				self.moved_piece.rect.center = self.positions[x][y]
+				self.moved_piece = None
+
 	def update(self):
+		if self.moved_piece is not None:
+			self.moved_piece.rect.center = pygame.mouse.get_pos()
 		self.all_sprites.update()
 
 	def draw(self):
@@ -71,6 +102,19 @@ class Game:
 		self.screen.fill(bg)
 		self.all_sprites.draw(self.screen)
 		pygame.display.update()
+
+	# private functions
+	def _get_board_position(self):
+		y, x = pygame.mouse.get_pos()
+		x = x - self.start_x
+		y = y - self.start_y
+
+		if x <= 0 or x >= width or y <= 0 or y >= height:
+			return (-1, -1)
+
+		x = ceil(x / 100) - 1
+		y = ceil(y / 100) - 1
+		return (x, y)
 
 	def _get_positions(self):
 		pos = []
