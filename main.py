@@ -2,6 +2,7 @@ import pygame
 from settings import *
 from board import *
 from pieces.pawn import *
+from pieces.bishop import *
 
 start_white = [
     [black_rook, black_knight, black_bishop, black_queen, black_king, black_bishop, black_knight, black_rook],
@@ -46,7 +47,10 @@ class Game:
 		self.pieces = pygame.sprite.LayeredUpdates()
 		self.board = Board(self)
 		self.start = start_white if self.is_white else start_black
-		self.pawn = Pawn(self, self._get_positions()[0][0], not self.is_white)
+		self.white_pawn = Pawn(self, self._get_positions()[0][0], self.is_white)
+		self.black_pawn = Pawn(self, self._get_positions()[0][1], not self.is_white)
+		self.white_bishop = Bishop(self, self._get_positions()[0][2], self.is_white)
+		self.white_bishop = Bishop(self, self._get_positions()[0][3], not self.is_white)
 
 	def events(self):
 		for event in pygame.event.get():
