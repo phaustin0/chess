@@ -3,6 +3,7 @@ from settings import *
 from board import *
 from pieces.pawn import *
 from pieces.bishop import *
+from pieces.knight import *
 
 start_white = [
     [black_rook, black_knight, black_bishop, black_queen, black_king, black_bishop, black_knight, black_rook],
@@ -51,6 +52,8 @@ class Game:
 		self.black_pawn = Pawn(self, self._get_positions()[0][1], not self.is_white)
 		self.white_bishop = Bishop(self, self._get_positions()[0][2], self.is_white)
 		self.white_bishop = Bishop(self, self._get_positions()[0][3], not self.is_white)
+		self.white_bishop = Knight(self, self._get_positions()[0][4], self.is_white)
+		self.white_bishop = Knight(self, self._get_positions()[0][5], not self.is_white)
 
 	def events(self):
 		for event in pygame.event.get():
