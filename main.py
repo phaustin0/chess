@@ -9,29 +9,10 @@ from pieces.rook import *
 from pieces.queen import *
 from pieces.king import *
 
-# start_white = [
-#     [black_rook, black_knight, black_bishop, black_queen, black_king, black_bishop, black_knight, black_rook],
-#     [black_pawn, black_pawn, black_pawn, black_pawn, black_pawn, black_pawn, black_pawn, black_pawn],
-#     [empty, empty, empty, empty, empty, empty, empty, empty,],
-#     [empty, empty, empty, empty, empty, empty, empty, empty,],
-#     [empty, empty, empty, empty, empty, empty, empty, empty,],
-#     [empty, empty, empty, empty, empty, empty, empty, empty,],
-#     [white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn,],
-#     [white_rook, white_knight, white_bishop, white_queen, white_king, white_bishop, white_knight, white_rook],
-# ]
-start_white_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+# TODO: fix valid moves of black pieces
+# TODO: remove drag to drop functionality (at least for now)
 
-# start_black = [
-#     [white_rook, white_knight, white_bishop, white_king, white_queen, white_bishop, white_knight, white_rook],
-#     [white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn, white_pawn,],
-#     [empty, empty, empty, empty, empty, empty, empty, empty,],
-#     [empty, empty, empty, empty, empty, empty, empty, empty,],
-#     [empty, empty, empty, empty, empty, empty, empty, empty,],
-#     [empty, empty, empty, empty, empty, empty, empty, empty,],
-#     [black_pawn, black_pawn, black_pawn, black_pawn, black_pawn, black_pawn, black_pawn, black_pawn],
-#     [black_rook, black_knight, black_bishop, black_king, black_queen, black_bishop, black_knight, black_rook],
-# ]
-start_black_fen = "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr"
+start_white_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 class Game:
 	def __init__(self):
@@ -43,7 +24,6 @@ class Game:
 		self.clock = pygame.time.Clock()
 
 		self.running = True
-		self.is_white = True
 
 		self.start_x = (win_width - width) / 2
 		self.start_y = (win_height - height) / 2
@@ -53,24 +33,19 @@ class Game:
 		self.all_sprites = pygame.sprite.LayeredUpdates()
 		self.pieces_sprites = pygame.sprite.LayeredUpdates()
 		self.board = Board(self)
-		# self.start = start_white if self.is_white else start_black
-		self.start_fen = start_white_fen if self.is_white else start_black_fen
+		self.start_fen = start_white_fen
 
-		self.pieces = self._load_pieces_from_fen("rnbqkbnr/pppppppp/8/4Q3/8/8/PPPPPPPP/RNBQKBNR")
-		self.moved_piece = None
-		self.original_piece_position = None
-		self.valid_moves = None
-		self.king_position = (4, 7)
+		self.pieces = self._load_pieces_from_fen(start_white_fen)
+		self.selected_piece = None
+		self.valid_moves = []
 
 	def events(self):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				self.running = False
 
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				if event.button != 1:
-					continue
-
+			clicked = event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+			if clicked and self.selected_piece is None:
 				x, y = self.get_board_position()
 				if x < 0 or y < 0:
 					continue
@@ -78,39 +53,39 @@ class Game:
 				piece = self.pieces[y][x]
 				if piece == "":
 					continue
-				self.moved_piece = piece
-				self.valid_moves = self.moved_piece.get_valid_moves()
-				self.original_piece_position = (x, y)
-				self.pieces[y][x] = ""
 
-			if event.type == pygame.MOUSEBUTTONUP:
-				if event.button != 1: continue
-				if self.moved_piece is None: continue
+				if not piece.is_white:
+					continue
 
+				if len(piece.get_valid_moves()) == 0:
+					continue
+
+				if self.selected_piece is not None:
+					continue
+
+				self.selected_piece = (piece, (x, y))
+				self.valid_moves = piece.get_valid_moves()
+
+			elif clicked and self.selected_piece is not None:
 				x, y = self.get_board_position()
+				if x < 0 or y < 0:
+					continue
 
-				valid = (x,y) in self.valid_moves
-				og_x, og_y = self.original_piece_position
-				if not valid and self.moved_piece.is_white == self.is_white:
-					self.moved_piece.rect.center = self.positions[og_y][og_x]
-					self.pieces[og_y][og_x] = self.moved_piece
-				else:
+				if (x, y) in self.valid_moves:
 					if self.pieces[y][x] != "":
 						self.pieces[y][x].kill()
 
-					self.moved_piece.has_moved = True
-					self.moved_piece.rect.center = self.positions[y][x]
-					self.pieces[y][x] = self.moved_piece
-					if type(self.moved_piece) == King and self.moved_piece.is_white:
-						self.king_position = (x, y)
+					self.pieces[y][x] = self.selected_piece[0]
+					old_x, old_y = self.selected_piece[1]
+					self.pieces[old_y][old_x] = ""
 
-				self.moved_piece = None
-				self.valid_moves = None
-				self.original_piece_position = None
+					self.pieces[y][x].rect.center = self.positions[y][x]
+					self.pieces[y][x].has_moved = True
+
+				self.selected_piece = None
+				self.valid_moves = []
 
 	def update(self):
-		if self.moved_piece is not None:
-			self.moved_piece.rect.center = pygame.mouse.get_pos()
 		self.all_sprites.update()
 
 	def draw(self):
@@ -131,6 +106,20 @@ class Game:
 		x = ceil(x / 100) - 1
 		y = ceil(y / 100) - 1
 		return (x, y)
+
+	# def is_player_in_check(self):
+	# 	for r in range(len(self.pieces)):
+	# 		for c in range(len(self.pieces[r])):
+	# 			piece = self.pieces[r][c]
+	# 			if piece == "":
+	# 				continue
+	# 			if piece.is_white:
+	# 				continue
+
+	# 			if self.king_position in piece.get_valid_moves():
+	# 				print(piece, r, c, piece.get_valid_moves())
+	# 				return True
+	# 	return False
 
 	# private functions
 	def _get_positions(self):

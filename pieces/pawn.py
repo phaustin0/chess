@@ -25,5 +25,6 @@ class Pawn(Piece):
             moves.append((x + 1, y - 1))
 
         # TODO: en passant
+        # TODO: pawn promotion
 
         return moves

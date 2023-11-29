@@ -17,6 +17,3 @@ class Piece(pygame.sprite.Sprite):
         self.rect.center = pos
 
         self.is_white = is_white
-
-    def get_valid_moves(self):
-        pass
