@@ -4,8 +4,7 @@ from pieces.piece import *
 class Bishop(Piece):
     def __init__(self, game, pos, white):
         self.game = game
-        self.is_white = white
-        super().__init__(self.game, pos, f"{'white' if white else 'black'} bishop")
+        super().__init__(self.game, pos, white, f"{'white' if white else 'black'} bishop")
 
     def get_valid_moves(self):
         moves = []
@@ -55,5 +54,4 @@ class Bishop(Piece):
                 moves.append((x + j + 1, y + j + 1))
             break
 
-        print(moves)
         return moves

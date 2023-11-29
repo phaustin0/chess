@@ -4,8 +4,7 @@ from pieces.piece import *
 class Pawn(Piece):
     def __init__(self, game, pos, white):
         self.game = game
-        self.is_white = white
-        super().__init__(self.game, pos, f"{'white' if white else 'black'} pawn")
+        super().__init__(self.game, pos, white, f"{'white' if white else 'black'} pawn")
 
     def get_valid_moves(self):
         moves = []
