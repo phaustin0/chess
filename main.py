@@ -56,7 +56,7 @@ class Game:
 		# self.start = start_white if self.is_white else start_black
 		self.start_fen = start_white_fen if self.is_white else start_black_fen
 
-		self.pieces = self._load_pieces_from_fen(self.start_fen)
+		self.pieces = self._load_pieces_from_fen("rnbqkbnr/pppppppp/8/3B4/6B1/8/PPPPPPPP/RNBQKBNR")
 		self.moved_piece = None
 		self.original_piece_position = None
 		self.valid_moves = None
