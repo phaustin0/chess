@@ -60,6 +60,7 @@ class Game:
 		self.moved_piece = None
 		self.original_piece_position = None
 		self.valid_moves = None
+		self.king_position = (4, 7)
 
 	def events(self):
 		for event in pygame.event.get():
@@ -100,6 +101,8 @@ class Game:
 					self.moved_piece.has_moved = True
 					self.moved_piece.rect.center = self.positions[y][x]
 					self.pieces[y][x] = self.moved_piece
+					if type(self.moved_piece) == King and self.moved_piece.is_white:
+						self.king_position = (x, y)
 
 				self.moved_piece = None
 				self.valid_moves = None
